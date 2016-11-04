@@ -1,0 +1,168 @@
+#pragma once
+#include<iostream>
+#include<iomanip>
+using namespace std;
+struct Polyo
+{
+	int coe;//系数
+	int index;//指数
+	struct Polyo *next;
+};
+
+Polyo * InputPolyo()//输入多项式的系数和指数
+{
+	int coe = 0;
+	int index = 0;
+	Polyo *p = (Polyo *)malloc(sizeof(Polyo));
+	p->coe = 0;
+	p->index = 0;
+	p->next = NULL;
+	Polyo *q = p;
+	cin.clear();
+	while(true)/*while (cin >> coe&&cin >> index)*/
+	{
+		cin >> coe >> index;
+		if (coe == 0&&index==0) break;
+		Polyo *s = (Polyo *)malloc(sizeof(Polyo));
+		s->coe = coe;
+		s->index = index;
+		s->next = NULL;
+		q->next = s;
+		q = q->next;
+	}
+	
+	return p;
+}
+Polyo * MergeTwoPolyo(Polyo *p1, Polyo *p2)//合并两个根据指数排过序的多项式链表
+{
+	Polyo *ret = (Polyo *)malloc(sizeof(Polyo));
+	ret->coe = 0;
+	ret->index = 0;
+	Polyo *q = ret, *temp1 = p1->next, *temp2 = p2->next;
+	while (temp1&&temp2)
+	{
+		if (temp1->index < temp2->index)
+		{
+			q->next = temp1;
+			temp1 = temp1->next;
+		}
+		else
+		{
+			q->next = temp2;
+			temp2 = temp2->next;
+		}
+		q = q->next;
+	}
+	q->next = temp1 ? temp1 : temp2;
+	return ret;
+}
+Polyo *SortPolyo(Polyo *p)//排序，递归，并调用merge
+{
+	if (p->next == NULL||p->next->next==NULL) return p;
+	Polyo *slow = p->next, *fast = p->next->next;
+	while (fast->next&&fast->next->next)
+	{
+		slow = slow->next;
+		fast = fast->next->next;
+	}
+	Polyo *head = (Polyo *)malloc(sizeof(Polyo));
+	head->coe = 0;
+	head->index = 0;
+	fast = slow->next;
+	slow->next = NULL;
+	head->next = fast;
+	return MergeTwoPolyo(SortPolyo(p), SortPolyo(head));
+}
+void PrintPolyo(Polyo *p)
+{
+	Polyo *q = p->next;
+	cout << "系数" << setw(7) << "指数" << endl;
+	while (q)
+	{
+		cout << q->coe << setw(7) << q->index << endl;
+		q = q->next;
+	}
+}
+Polyo *AddPolyo(Polyo *p1, Polyo *p2)//多项式加法
+{
+	Polyo *ret = (Polyo *)malloc(sizeof(Polyo)), *r = ret;//头结点
+	ret->coe = ret->index = 0;
+	ret->next = NULL;
+	p1 = SortPolyo(p1);
+	p2 = SortPolyo(p2);
+	Polyo *q1 = p1->next, *q2 = p2->next;
+	while (q1&&q2)
+	{
+		Polyo *s = (Polyo *)malloc(sizeof(Polyo));
+		s->next = NULL;
+		if (q1->index == q2->index)//系数相加，指数不变
+		{
+			s->index = q1->index;
+			s->coe = q1->coe + q2->coe;
+			q1 = q1->next;
+			q2 = q2->next;
+		}
+		else if (q1->index < q2->index)//q2没有此项这q1系数为结果系数
+		{
+			s->index = q1->index;
+			s->coe = q1->coe;
+			q1 = q1->next;
+		}
+		else//q1没有此项这q3系数为结果
+		{
+			s->index = q2->index;
+			s->coe = q2->coe;
+			q2 = q2->next;
+		}
+		r->next = s;
+		r = r->next;
+	}
+	r->next = q1 ? q1 : q2;
+	return ret;
+}
+Polyo *MinusPolyo(Polyo *p1, Polyo *p2)//减法
+{
+	Polyo *temp = (Polyo *)malloc(sizeof(Polyo)), *r = temp;
+	temp->coe = temp->index = 0;
+	temp->next = NULL;
+	Polyo *q2 = p2->next;
+	while (q2)
+	{
+		Polyo *s = (Polyo *)malloc(sizeof(Polyo));
+		s->coe = -q2->coe;
+		s->index = q2->index;
+		s->next = NULL;
+		r->next = s;
+		r = r->next;
+		q2 = q2->next;
+	}
+	return AddPolyo(p1, temp);
+}
+Polyo *MultiPolyo(Polyo *p1, Polyo *p2)//乘
+{
+	Polyo *ret = (Polyo *)malloc(sizeof(Polyo));
+	ret->coe = ret->index = 0;
+	ret->next = NULL;
+	Polyo *q1 = p1->next, *q2 = p2->next;
+	while (q2)
+	{
+		Polyo *temp = q1;
+		Polyo *ptemp = (Polyo *)malloc(sizeof(Polyo)), *r = ptemp;
+		ptemp->coe = ptemp->index = 0;
+		ptemp->next = NULL;
+		while (temp)
+		{
+			Polyo *s = (Polyo *)malloc(sizeof(Polyo));
+			s->coe = temp->coe*q2->coe;
+			s->index = temp->index + q2->index;
+			s->next = NULL;
+			r->next = s;
+			r = r->next;
+			temp = temp->next;
+		}
+		ret = AddPolyo(ret, ptemp);
+		q2 = q2->next;
+
+	}
+	return ret;
+}
