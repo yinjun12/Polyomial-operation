@@ -1,0 +1,17 @@
+#include"Polyo.h"
+int main()
+{
+	cout << "please input a polyomai: " << endl;
+	Polyo *p1 = InputPolyo();
+	cout << "please input another polyomai: " << endl;
+	Polyo *p2 = InputPolyo();
+	PrintPolyo(p1);
+	PrintPolyo(p2);
+	Polyo *p3 = AddPolyo(p1, p2);
+	PrintPolyo(p3);
+	Polyo *p4 = MinusPolyo(p1, p2);
+	PrintPolyo(p4);
+	Polyo *p5 = MultiPolyo(p1, p2);
+	PrintPolyo(p5);
+	return 0;
+}
